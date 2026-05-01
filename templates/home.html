@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Inputs{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="eyebrow">Phase 1 - Upload</div>
+    <h1>Turn BRD and flow images into structured test cases.</h1>
+    <p>Upload a PDF BRD, images, or both. We will prepare the inputs and keep your API key in session only.</p>
+  </section>
+
+  {% if integration_status %}
+    <div class="card" style="border-color: #9dd5c9; background: #ecf7f5;">
+      {{ integration_status }}
+    </div>
+  {% endif %}
+  {% if integration_error %}
+    <div class="error-box">
+      {{ integration_error }}
+    </div>
+  {% endif %}
+  {% if errors %}
+    <div class="error-box">
+      <strong>Fix the following issues:</strong>
+      <ul>
+        {% for error in errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <section class="grid">
+    <form class="card" method="post">
+      {% csrf_token %}
+      <div>
+        <label>OpenAI API Key</label>
+        <input type="password" name="api_key" placeholder="sk-..." required>
+      </div>
+      <div style="margin-top: 16px;">
+        <label>Model</label>
+        <select name="model_name">
+          <option value="gpt-4o-mini" {% if selected_model == "gpt-4o-mini" %}selected{% endif %}>
+            gpt-4o-mini
+          </option>
+          <option value="gpt-4o" {% if selected_model == "gpt-4o" %}selected{% endif %}>
+            gpt-4o
+          </option>
+        </select>
+      </div>
+      <div style="margin-top: 18px;">
+        <button class="btn" name="action" value="test_integration" type="submit">
+          Confirm integration
+        </button>
+      </div>
+    </form>
+    <form class="card" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+        <div class="tag">Confirm integration first</div>
+      <div class="grid">
+        <div>
+          <label>PDF BRD</label>
+          <input type="file" name="pdf_file" accept="application/pdf">
+        </div>
+        <div>
+          <label>Images</label>
+          <input type="file" name="image_files" accept="image/*" multiple>
+        </div>
+      </div>
+      <input type="hidden" name="action" value="upload">
+      <div style="margin-top: 18px;">
+        <button class="btn" type="submit">Generate CSV</button>
+      </div>
+    </form>
+    <div class="card">
+      <div class="eyebrow">Inputs accepted</div>
+      <h3>Upload rules</h3>
+      <p>Supports text or scanned PDFs plus JPG/PNG screenshots. Combine both for best results.</p>
+      <div style="margin-top: 16px;">
+        <div class="tag">No login required</div>
+        <div class="tag">Local storage only</div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

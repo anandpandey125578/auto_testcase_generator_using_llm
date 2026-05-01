@@ -1,0 +1,9 @@
+Generate Python automation code from the provided CSV test cases.
+Use the selected framework (Selenium or Playwright).
+
+Rules:
+- Output only code, no markdown.
+- Use modular structure (helper methods + test functions), not a single script dump.
+- Keep code readable and maintainable.
+- Use placeholders for selectors when missing.
+- Assume pytest style tests.

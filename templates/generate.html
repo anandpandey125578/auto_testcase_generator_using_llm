@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Code{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="eyebrow">Phase 5 - Codegen</div>
+    <h1>Turn your reviewed CSV into runnable tests.</h1>
+    <p>Select a framework and generate structured Python automation code.</p>
+  </section>
+
+  <section class="grid">
+    <form class="card" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if codegen_status %}
+        <div class="card" style="border-color: #9dd5c9; background: #ecf7f5; margin-bottom: 16px;">
+          {{ codegen_status }}
+        </div>
+      {% endif %}
+      {% if codegen_error %}
+        <div class="error-box" style="margin-bottom: 16px;">
+          {{ codegen_error }}
+        </div>
+      {% endif %}
+      {% if csv_upload_status %}
+        <div class="card" style="border-color: #9dd5c9; background: #ecf7f5; margin-bottom: 16px;">
+          {{ csv_upload_status }}
+        </div>
+      {% endif %}
+      {% if csv_upload_error %}
+        <div class="error-box" style="margin-bottom: 16px;">
+          {{ csv_upload_error }}
+        </div>
+      {% endif %}
+      <div>
+        <label>Upload reviewed CSV</label>
+        <input type="file" name="csv_file" accept=".csv">
+      </div>
+      <div style="margin-top: 16px;">
+        <label>Framework</label>
+        <select name="framework">
+          <option value="selenium" {% if selected_framework == "selenium" %}selected{% endif %}>
+            Selenium (Python)
+          </option>
+          <option value="playwright" {% if selected_framework == "playwright" %}selected{% endif %}>
+            Playwright (Python)
+          </option>
+        </select>
+      </div>
+      <div style="margin-top: 18px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <button class="btn" name="action" value="validate_csv" type="submit">Validate CSV</button>
+          <button class="btn secondary" name="action" value="generate_code" type="submit">
+            Generate code
+          </button>
+          <a class="btn secondary" href="/output/">View output</a>
+        </div>
+      </div>
+    </form>
+    <div class="card">
+      <h3>Uploaded images</h3>
+      <p>These will be used to improve code generation once wired.</p>
+      <div class="image-strip" style="margin-top: 16px;">
+        {% for image in image_sequence %}
+          <div>
+            <div class="tag">Image {{ image.index }}</div>
+            <img
+              src="{{ image.url }}"
+              alt="{{ image.name }}"
+              data-lightbox
+              data-full="{{ image.url }}"
+              data-title="Image {{ image.index }}: {{ image.name }}"
+              style="margin-top: 8px; cursor: pointer;"
+            >
+          </div>
+        {% empty %}
+          <p>No images uploaded.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card full-span">
+      <h3>Validated CSV preview</h3>
+      {% if reviewed_csv_headers %}
+        <div class="table-wrap">
+          <table class="csv-table">
+            <thead>
+              <tr>
+                {% for header in reviewed_csv_headers %}
+                  <th>{{ header }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in reviewed_csv_rows %}
+                <tr>
+                  {% for value in row %}
+                    <td>{{ value }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p>No validated CSV yet.</p>
+      {% endif %}
+    </div>
+    <div class="card full-span">
+      <h3>Generated code preview</h3>
+      {% if generated_code_preview %}
+        <pre class="code-box">{{ generated_code_preview }}</pre>
+        <div style="margin-top: 12px;">
+          <a class="btn secondary" href="/output/">Open full output</a>
+        </div>
+      {% else %}
+        <p>No code generated yet.</p>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h3>Output notes</h3>
+      <p>We will generate modular test files, not a single script dump.</p>
+      <div style="margin-top: 16px;">
+        <div class="tag">Selenium</div>
+        <div class="tag">Playwright</div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

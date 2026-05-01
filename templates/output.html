@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Generated Code{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="eyebrow">Output</div>
+    <h1>Your automation code is ready.</h1>
+    <p>Copy the generated code below or download the file once downloads are wired.</p>
+  </section>
+
+  <section class="card">
+    {% if generated_code %}
+      <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <a class="btn" href="/output/download/">Download code</a>
+      </div>
+      <pre class="code-box">{{ generated_code }}</pre>
+    {% else %}
+      <p>No code generated yet. Go to the generate page and run code generation.</p>
+    {% endif %}
+  </section>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Review CSV{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <div class="eyebrow">Phase 3 - Review</div>
+    <h1>Review the extracted inputs before generating CSV.</h1>
+    <p>This step confirms what was received. The CSV editor will live here in Phase 3.</p>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h3>Uploaded files</h3>
+      <ul class="file-list">
+        {% if pdf_name %}
+          <li class="file-item">PDF: {{ pdf_name }}</li>
+        {% endif %}
+        {% for image in image_sequence %}
+          <li class="file-item">Image {{ image.index }}: {{ image.name }}</li>
+        {% empty %}
+          {% if not pdf_name %}
+            <li class="file-item">No files uploaded yet.</li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Set image sequence</h3>
+      <p>Order your screenshots before generating CSV.</p>
+      <div style="margin-top: 16px; display: grid; gap: 12px;">
+        {% for image in image_sequence %}
+          <div class="file-item" style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div>
+              <strong>Image {{ image.index }}</strong> — {{ image.name }}
+            </div>
+            <form method="post" style="display: flex; gap: 8px;">
+              {% csrf_token %}
+              <input type="hidden" name="index" value="{{ forloop.counter0 }}">
+              <button class="btn secondary" name="action" value="move_up" type="submit" {% if forloop.first %}disabled{% endif %}>
+                Move up
+              </button>
+              <button class="btn secondary" name="action" value="move_down" type="submit" {% if forloop.last %}disabled{% endif %}>
+                Move down
+              </button>
+            </form>
+          </div>
+        {% empty %}
+          <p>No images to reorder yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Image sequence preview</h3>
+      <p>Preview of uploaded images in sequence order.</p>
+      <div style="margin-top: 16px; display: grid; gap: 12px;">
+        {% for image in image_sequence %}
+          <div>
+            <div class="tag">Image {{ image.index }}</div>
+            <img src="{{ image.url }}" alt="{{ image.name }}" style="width: 100%; border-radius: 16px; border: 1px solid var(--border); margin-top: 8px;">
+          </div>
+        {% empty %}
+          <p>No images to preview yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <h3>PDF extraction</h3>
+      <p>We extract text only from the PDF. Images will be sent to the LLM in sequence.</p>
+      {% if extract_error %}
+        <div class="error-box" style="margin-top: 12px;">
+          {{ extract_error }}
+        </div>
+      {% endif %}
+      <form method="post" style="margin-top: 16px;">
+        {% csrf_token %}
+        <button class="btn" name="action" value="extract" type="submit">Extract PDF text</button>
+      </form>
+      {% if raw_text_preview %}
+        <div style="margin-top: 16px;">
+          <div class="tag">Extracted text preview ({{ raw_text_length }} chars)</div>
+          <div class="code-box" style="margin-top: 8px;">{{ raw_text_preview }}</div>
+        </div>
+      {% endif %}
+        <form method="post" style="margin-top: 16px;">
+          {% csrf_token %}
+          <button class="btn" name="action" value="generate_csv" type="submit">Generate CSV</button>
+        </form>
+        {% if csv_error %}
+          <div class="error-box" style="margin-top: 12px;">
+            {{ csv_error }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="card full-span">
+        <h3>CSV editor</h3>
+        {% if csv_rows %}
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="row_count" value="{{ csv_rows|length }}">
+            <div class="table-wrap">
+              <table class="csv-table">
+                <thead>
+                  <tr>
+                    {% for header in csv_headers %}
+                      <th>{{ header }}</th>
+                    {% endfor %}
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in csv_rows %}
+                    <tr>
+                      {% for value in row %}
+                        <td>
+                          <input
+                            type="text"
+                            name="cell_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}"
+                            value="{{ value }}"
+                          >
+                        </td>
+                      {% endfor %}
+                      <td>
+                        <button
+                          class="btn secondary"
+                          name="action"
+                          value="delete_row"
+                          type="submit"
+                        >
+                          Delete
+                        </button>
+                        <input type="hidden" name="delete_index" value="{{ forloop.counter0 }}">
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn" name="action" value="save_csv" type="submit">Save edits</button>
+              <button class="btn secondary" name="action" value="add_row" type="submit">Add row</button>
+              <a class="btn" href="/review/download/">Download CSV</a>
+              <a class="btn secondary" href="/generate/">Proceed to code generation</a>
+            </div>
+          </form>
+        {% else %}
+          <p>No CSV generated yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

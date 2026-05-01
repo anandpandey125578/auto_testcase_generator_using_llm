@@ -1,0 +1,12 @@
+Generate test cases from the provided requirements text.
+Return CSV with the exact required schema and column order.
+
+You may also receive related UI flow images. Use them to refine steps.
+
+Schema (exact order):
+TC_ID,Module,Title,Preconditions,Steps,Test_Data,Expected_Result,Type (UI/API),Priority (High/Medium/Low),Automation_Candidate (Yes/No)
+
+Rules:
+- Output CSV only, no markdown.
+- Include UI and API cases if applicable.
+- Avoid modules not present in the input.
